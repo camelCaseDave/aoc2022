@@ -1,0 +1,12 @@
+﻿var lines = File.ReadAllLines("input.txt");
+var score = 0;
+
+foreach (var line in lines)
+{
+    var firstHalf = new HashSet<char>(line[..(line.Length / 2)]);
+    var secondHalf = new HashSet<char>(line[(line.Length / 2 + 1)..]);
+    var overlap = firstHalf.Intersect(secondHalf).FirstOrDefault();
+    score += char.IsUpper(overlap) ? overlap % 32 + 26 : overlap % 32;
+}
+
+Console.WriteLine(score);
