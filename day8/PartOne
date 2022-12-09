@@ -1,0 +1,33 @@
+﻿var input = File.ReadAllLines("input.txt");
+var gridWidth = input[0].Length;
+var gridHeight = input.Length;
+var trees = new List<(int, int, int)>();
+
+for (var y = 0; y < gridHeight; y++)
+{
+    for (var x = 0; x < gridWidth; x++)
+    {
+        trees.Add((x, y,
+            int.Parse(input[y].Skip(x).First().ToString())));
+    }
+}
+
+var visible = 0;
+foreach (var tree in trees.Where(t =>
+    t.Item1 != 0 &&
+    t.Item2 != 0 &&
+    t.Item1 != gridWidth - 1 &&
+    t.Item2 != gridHeight - 1))
+{
+    var (x, y, h) = tree;
+    if (!trees.Any(t => t.Item2 == y && t.Item1 > x && t.Item3 >= h) ||
+        !trees.Any(t => t.Item2 == y && t.Item1 < x && t.Item3 >= h) ||
+        !trees.Any(t => t.Item1 == x && t.Item2 > y && t.Item3 >= h) ||
+        !trees.Any(t => t.Item1 == x && t.Item2 < y && t.Item3 >= h))
+        {
+            visible++;
+        }
+}
+
+visible += gridWidth * 2 + gridHeight * 2 - 4;
+Console.WriteLine(visible);
