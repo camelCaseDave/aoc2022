@@ -1,44 +1,20 @@
-﻿var input = System.IO.File.ReadAllLines("input.txt");
-var root = new Dir("/", new List<File>(), new List<Dir>());
-var currentDir = root;
-var prevDir = default(Dir);
-foreach (var line in input.Take(1..))
-{
-    if (line.StartsWith("$ ls")) continue;
-    if (line.Equals("$ cd .."))
-    {
-        currentDir = prevDir;
-        continue;
-    }
-    if (line.StartsWith("$ cd"))
-    {
-        if (!currentDir.SubDirs.Any(d => d.Name == line[5..]))
-        {
-            var newDir = new Dir(line[5..], new List<File>(), new List<Dir>());
-            currentDir?.SubDirs.Add(newDir);
-            currentDir = newDir;
-        }
-        else
-        {
-            currentDir = currentDir.SubDirs.First(d => d.Name == line[5..]);
-        }
+﻿var fileSystem = new Stack<string>();
+var directories = new Dictionary<string, int>();
 
-        prevDir = currentDir;
-        continue;
-    }
-    if (int.TryParse(line.Split(' ').First(), out var size))
+foreach (var line in await File.ReadAllLinesAsync("input.txt"))
+{
+    if (line == "$ cd ..")
+        fileSystem.Pop();
+    else if (line.StartsWith("$ cd "))
+        fileSystem.Push(string.Join("", fileSystem) + line[5..]);
+    else if (char.IsDigit(line[0]))
     {
-        var fileName = line.Split(' ').Last();
-        currentDir?.Files.Add(new File(fileName, size));
+        var size = int.Parse(line.Split(' ')[0]);
+        foreach (var directory in fileSystem)
+            directories[directory] = directories.GetValueOrDefault(directory) + size;
     }
 }
 
-var result = root.SubDirs
-    .SelectMany(d => d.SubDirs)
-    .Where(d => d.Files.Sum(f => f.Size) <= 100000)
-    .Sum(d => d.Files.Sum(f => f.Size));
-
+var freeSpace = 70_000_000 - directories.Values.ToList().Max();
+var result = directories.Values.ToList().Where(size => size + freeSpace >= 30_000_000).Min();
 Console.WriteLine(result);
-
-record Dir(string Name, List<File> Files, List<Dir> SubDirs);
-record File(string Name, int Size);
