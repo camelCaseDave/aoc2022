@@ -8,13 +8,12 @@ foreach (var line in await File.ReadAllLinesAsync("input.txt"))
     else if (line.StartsWith("$ cd "))
         fileSystem.Push(string.Join("", fileSystem) + line[5..]);
     else if (char.IsDigit(line[0]))
-    {
-        var size = int.Parse(line.Split(' ')[0]);
-        foreach (var directory in fileSystem)
-            directories[directory] = directories.GetValueOrDefault(directory) + size;
-    }
+        foreach (var path in fileSystem)
+            directories[path] = directories.GetValueOrDefault(path) + int.Parse(line.Split(' ')[0]);
 }
 
-var freeSpace = 70_000_000 - directories.Values.ToList().Max();
-var result = directories.Values.ToList().Where(size => size + freeSpace >= 30_000_000).Min();
+var result = directories.Values.ToList()
+    .Where(size => size + 
+        (70_000_000 - directories.Values.ToList().Max()) >= 30_000_000)
+    .Min();
 Console.WriteLine(result);
